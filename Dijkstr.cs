@@ -81,38 +81,6 @@ namespace GenericDijkstra
                 }
             }
         }
-        public static void Main()
-        {
-            Graph<(double, double), int> graph = new();
-            var a = graph.AddNode((2, 1));
-            var b = graph.AddNode((3, 4));
-            var c = graph.AddNode((5, 5));
-            var d = graph.AddNode((5, 2));
-            var e = graph.AddNode((7, 2));
-            graph.AddEdge(a, b, 0);
-            graph.AddEdge(b, c, 0);
-            graph.AddEdge(b, e, 0);
-            graph.AddEdge(c, d, 0);
-            graph.AddEdge(d, e, 0);
-            var res = Run(
-                a,
-                ni => graph.NeighborIndices(ni).Select(nei =>
-                {
-                    var from = graph[ni];
-                    var to = graph[nei.Node];
-                    var dist = Math.Sqrt(Math.Pow(to.Item1 - from.Item1, 2) + Math.Pow(to.Item2 - from.Item2, 2));
-                    return (nei.Node, dist);
-                }),
-                index => index == d
-            ) ?? throw new Exception("No path");
-            var (path, cost) = res;
-            Console.WriteLine($"cost: {cost}");
-            Console.WriteLine("path:");
-            foreach (var ni in path)
-            {
-                Console.WriteLine(graph[ni]);
-            }
-        }
     }
     /// <summary>
     /// An index for graph nodes
@@ -225,6 +193,20 @@ namespace GenericDijkstra
         public int EdgeCount
         {
             get => edges.Count;
+        }
+        /// <summary>
+        /// All node indices
+        /// </summary>
+        public IEnumerable<NodeIndex> NodeIndices
+        {
+            get => Enumerable.Range(0, nodes.Count).Select(i => new NodeIndex { i = i });
+        }
+        /// <summary>
+        /// All edge indices
+        /// </summary>
+        public IEnumerable<EdgeIndex> EdgeIndices
+        {
+            get => Enumerable.Range(0, edges.Count).Select(i => new EdgeIndex { i = i });
         }
         /// <summary>
         /// Whether the graph is directed
