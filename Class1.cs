@@ -1,4 +1,5 @@
-﻿
+﻿#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +12,19 @@ namespace GenericDijkstra
         public bool hasParent;
         public double cost;
     }
+    /// <summary>
+    /// The main Dijkstra's algorithm class
+    /// </summary>
     public static class Diskstra
     {
+        /// <summary>
+        /// Run the algorithm
+        /// </summary>
+        /// <typeparam name="T">The node type</typeparam>
+        /// <param name="start">The start node</param>
+        /// <param name="successors">Function getting the successors/neighbors of a node as well as the costs to reach them</param>
+        /// <param name="isEnd">Function to check if a node is the end node</param>
+        /// <returns></returns>
         public static (List<T>, double)? Run<T>(
             T start,
             Func<T, IEnumerable<(T, double)>> successors,
@@ -102,6 +114,9 @@ namespace GenericDijkstra
             }
         }
     }
+    /// <summary>
+    /// An index for graph nodes
+    /// </summary>
     public struct NodeIndex
     {
         internal int i;
@@ -126,6 +141,9 @@ namespace GenericDijkstra
             return i.GetHashCode();
         }
     }
+    /// <summary>
+    /// An index for graph edges
+    /// </summary>
     public struct EdgeIndex
     {
         internal int i;
@@ -155,17 +173,63 @@ namespace GenericDijkstra
         internal N node;
         internal List<Neighbor<NodeIndex, EdgeIndex>> neighbors;
     }
+    /// <summary>
+    /// A neighbor of a node
+    /// </summary>
+    /// <typeparam name="N">The node type</typeparam>
+    /// <typeparam name="E">The edge type</typeparam>
     public class Neighbor<N, E>
     {
+        /// <summary>
+        /// The edge connecting to the neighbor node
+        /// </summary>
         public E Edge { get; init; }
+        /// <summary>
+        /// The neighbor node
+        /// </summary>
         public N Node { get; init; }
     }
+    /// <summary>
+    /// A graph structure with generic node and edge types
+    /// </summary>
+    /// <typeparam name="N"></typeparam>
+    /// <typeparam name="E"></typeparam>
     public class Graph<N, E>
     {
         private readonly List<NodeEntry<N>> nodes = new();
         private readonly List<E> edges = new();
+        /// <summary>
+        /// The nodes
+        /// </summary>
+        public IEnumerable<N> Nodes
+        {
+            get => nodes.Select(entry => entry.node);
+        }
+        /// <summary>
+        /// The edges
+        /// </summary>
+        public IEnumerable<E> Edges
+        {
+            get => edges;
+        }
+        /// <summary>
+        /// The number of nodes
+        /// </summary>
+        public int NodeCount
+        {
+            get => nodes.Count;
+        }
+        /// <summary>
+        /// The number of edges
+        /// </summary>
+        public int EdgeCount
+        {
+            get => edges.Count;
+        }
+        /// <summary>
+        /// Whether the graph is directed
+        /// </summary>
         public bool Directed { get; init; } = false;
-
         public N this[NodeIndex i]
         {
             get => nodes[i.i].node;
@@ -176,6 +240,11 @@ namespace GenericDijkstra
             get => edges[i.i];
             set => edges[i.i] = value;
         }
+        /// <summary>
+        /// Add a node
+        /// </summary>
+        /// <param name="node">The node to add</param>
+        /// <returns>The NodeIndex of the inserted node</returns>
         public NodeIndex AddNode(N node)
         {
             var index = new NodeIndex { i = nodes.Count };
@@ -183,6 +252,13 @@ namespace GenericDijkstra
             nodes.Add(entry);
             return index;
         }
+        /// <summary>
+        /// Add an edge connecting two nodes
+        /// </summary>
+        /// <param name="a">The start node</param>
+        /// <param name="b">The end node</param>
+        /// <param name="edge">The edge</param>
+        /// <returns>The EdgeIndex of the connection</returns>
         public EdgeIndex AddEdge(NodeIndex a, NodeIndex b, E edge)
         {
             var existingEdgeIndex = GetEdgeConnecting(a, b);
@@ -198,6 +274,12 @@ namespace GenericDijkstra
                     return ei;
             }
         }
+        /// <summary>
+        /// Get the index of the edge connecting two nodes
+        /// </summary>
+        /// <param name="a">The start node</param>
+        /// <param name="b">The end node</param>
+        /// <returns>The index of the edge connecting the nodes</returns>
         public EdgeIndex? GetEdgeConnecting(NodeIndex a, NodeIndex b)
         {
             try
@@ -220,10 +302,20 @@ namespace GenericDijkstra
                 }
             }
         }
+        /// <summary>
+        /// Enumerate the neighbors of a node by index
+        /// </summary>
+        /// <param name="start">The node for which to find neighbors</param>
+        /// <returns>The neighbors</returns>
         public IEnumerable<Neighbor<NodeIndex, EdgeIndex>> NeighborIndices(NodeIndex start)
         {
             return nodes[start.i].neighbors;
         }
+        /// <summary>
+        /// Enumerate the neighbors of a node by weight
+        /// </summary>
+        /// <param name="start">The node for which to find neighbors</param>
+        /// <returns>The neighbors</returns>
         public IEnumerable<Neighbor<N, E>> NeighborWeights(NodeIndex start)
         {
             return nodes[start.i].neighbors.Select(nei => new Neighbor<N, E> { Node = this[nei.Node], Edge = this[nei.Edge] });
